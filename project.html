@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Student Manager v2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --success: #1cc88a;
+            --danger: #e74a3b;
+            --bg: #f8f9fc;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            justify-content: center;
+        }
+
+        .form-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            flex: 1;
+            min-width: 320px;
+            max-width: 400px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #555; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .table-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            flex: 2;
+            min-width: 350px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; color: var(--primary); font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #f1f1f1; font-size: 14px; }
+
+        .badge-gender {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #eee;
+        }
+
+        .btn-del {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) { .main-content { flex-direction: column; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="margin:0; color:var(--primary);">Student Enrollment System</h2>
+        <p style="color:#888; margin:5px 0 0;">Injibara University • SE Project</p>
+    </div>
+
+    <div class="main-content">
+        <div class="form-card">
+            <h3 style="margin-top:0;">Add Student</h3>
+            <form id="studentForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="name" placeholder="Enter name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="email@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <select id="dept">
+                        <option>Software Engineering</option>
+                        <option>Computer Science</option>
+                        <option>Information Technology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="gender">
+                        <option>Male</option>
+                        <option>Female</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Register Now</button>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <h3 style="margin-top:0;">Student Registry</h3>
+            <div style="overflow-x:auto;">
+                <table id="stTable">
+                    <thead>
+                        <tr>
+                            <th>Student Info</th>
+                            <th>Dept</th>
+                            <th>Gender</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('studentForm');
+        const tableBody = document.querySelector('#stTable tbody');
+
+        window.onload = loadData;
+
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            const student = {
+                id: Date.now(),
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                dept: document.getElementById('dept').value,
+                gender: document.getElementById('gender').value
+            };
+
+            const students = JSON.parse(localStorage.getItem('my_students')) || [];
+            students.push(student);
+            localStorage.setItem('my_students', JSON.stringify(students));
+            
+            loadData();
+            form.reset();
+        };
+
+        function loadData() {
+            tableBody.innerHTML = "";
+            const students = JSON.parse(localStorage.getItem('my_students')) || [];
+            students.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${s.name}</strong><br><small style="color:#999">${s.email}</small></td>
+                    <td>${s.dept}</td>
+                    <td><span class="badge-gender">${s.gender}</span></td>
+                    <td><button class="btn-del" onclick="remove(${s.id})">Del</button></td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function remove(id) {
+            if(confirm("Are you sure?")) {
+                let students = JSON.parse(localStorage.getItem('my_students'));
+                students = students.filter(s => s.id !== id);
+                localStorage.setItem('my_students', JSON.stringify(students));
+                loadData();
+            }
+        }
+    </script>
+</body>
+</html>
+
+
